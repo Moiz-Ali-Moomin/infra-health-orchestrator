@@ -1,0 +1,15 @@
+# Defines the root dependency DAG matrix for the CorrelationEngine
+# Nodes represent Checks. Edges are Downstream -> Upstream dependencies.
+# If database_check fails, we can assume http_check might also fail as a symptom.
+
+nodes:
+  - id: database_check
+  - id: kubernetes_check
+  - id: resource_check
+  - id: http_check
+  
+edges:
+  - from: http_check
+    to: database_check
+  - from: http_check
+    to: kubernetes_check

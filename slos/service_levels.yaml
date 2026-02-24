@@ -1,0 +1,10 @@
+slos:
+  - service_id: "core-transaction-db"
+    description: "Database latency and connection availability"
+    target_availability_percent: 99.9
+    rolling_window_days: 7
+    thresholds:
+      latency_ms_max: 50
+      burn_rate_alert: 2.5
+    action:
+      on_exhaustion: BLOCK_DEPLOYMENT

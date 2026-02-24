@@ -1,0 +1,22 @@
+environment: production
+decisions:
+  allow_partial_degradation: false
+  deploy_gate_mode: strict
+checks:
+  database_check:
+    required: true
+    severity: CRITICAL
+    timeout_sec: 5.0
+    circuit_breaker:
+      failure_threshold: 3
+      recovery_timeout_sec: 30
+  http_check:
+    required: false
+    severity: WARNING
+    timeout_sec: 2.0
+  kubernetes_check:
+    required: true
+    severity: CRITICAL
+  resource_check:
+    required: false
+    severity: WARNING

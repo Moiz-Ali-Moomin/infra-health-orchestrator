@@ -1,44 +1,22 @@
-from fastapi import APIRouter, HTTPException, status
-from app.services.health_orchestrator import HealthOrchestrator
-from app.utils.logger import setup_logger
+from fastapi import APIRouter
+from app.api.v1.gates import router as gates_router
+from app.api.v1.metrics import router as metrics_router
+from app.api.v1.audit import router as audit_router
 
-logger = setup_logger(__name__)
 router = APIRouter()
-orchestrator = HealthOrchestrator()
 
-@router.get("/health/live", summary="Liveness Probe")
+# Standard Minimal K8s Probes
+@router.get("/health/live", summary="Liveness Probe", tags=["Probes"])
 async def liveness_check():
-    """Basic check to confirm the API is running."""
+    """Minimal assertion that the ASGI server loop is running."""
     return {"status": "alive"}
 
-@router.get("/health/ready", summary="Readiness Probe")
+@router.get("/health/ready", summary="Readiness Probe", tags=["Probes"])
 async def readiness_check():
-    """
-    Fast aggregated check for Kubernetes readiness probe.
-    (Note: Typically lighter than a full system validation; 
-    can be expanded to check specific critical dependencies).
-    """
+    """Assertion that the execution engine is ready to receive checks."""
     return {"status": "ready"}
 
-@router.post("/health/run", summary="Run Full System Validation")
-async def run_validation():
-    """
-    Executes a full suite of system health validations:
-    - HTTP endpoints
-    - Kubernetes resources
-    - Database connectivity
-    - System resources
-    
-    Returns 503 Service Unavailable if any critical check fails.
-    """
-    logger.info("Received request to run full system validation.")
-    
-    results = orchestrator.run_all()
-    
-    if results["status"] != "healthy":
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=results
-        )
-        
-    return results
+# Mount Advanced V1 Reliability & Governance Sub-Routers
+router.include_router(gates_router)
+router.include_router(metrics_router)
+router.include_router(audit_router)
